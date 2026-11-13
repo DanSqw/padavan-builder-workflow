@@ -1,102 +1,71 @@
-# ==============================================================================
-# ALT13 Strategy for Zapret (Discord, YouTube, General DPI Desync)
-# Pure fake mode matching working PC configuration
-# ==============================================================================
-
-# Profile 1: UDP 443 (QUIC) for General List
---filter-udp=443
---hostlist=/usr/share/zapret/list-general.txt
---hostlist=/etc/storage/zapret/user.list
---hostlist-exclude=/usr/share/zapret/list-exclude.txt
---hostlist-exclude=/etc/storage/zapret/exclude.list
---dpi-desync=fake
---dpi-desync-repeats=11
---dpi-desync-fake-quic=/usr/share/zapret/fake/quic_initial_www_google_com.bin
-
-# Profile 2: UDP Discord Voice (WebRTC RTC & STUN)
---new
+# Profile 1: Discord WebRTC UDP Voice
 --filter-udp=19294-19344,50000-50100
 --filter-l7=discord,stun
 --dpi-desync=fake
 --dpi-desync-fake-discord=/usr/share/zapret/fake/ACTIVE_DISCORD_UDP.bin
 --dpi-desync-fake-stun=/usr/share/zapret/fake/ACTIVE_DISCORD_UDP.bin
---dpi-desync-repeats=5
+--dpi-desync-repeats=6
 
-# Profile 3: TCP Discord Media
+# Profile 2: QUIC UDP 443
+--new
+--filter-udp=443
+--dpi-desync=fake
+--dpi-desync-repeats=6
+--dpi-desync-fake-quic=/usr/share/zapret/fake/quic_initial_www_google_com.bin
+--hostlist-exclude=/usr/share/zapret/list-exclude.txt
+--hostlist-exclude=/etc/storage/zapret/exclude.list
+
+# Profile 3: TCP Discord Media (Cloudflare non-standard ports)
 --new
 --filter-tcp=2053,2083,2087,2096,8443
 --hostlist-domains=discord.media
---dpi-desync=fake
---dpi-desync-fooling=ts
---dpi-desync-repeats=7
+--dpi-desync=fake,multisplit
+--dpi-desync-split-pos=1,midsld
+--dpi-desync-fooling=badseq
+--dpi-desync-badseq-increment=10000000
+--dpi-desync-repeats=6
 --dpi-desync-fake-tls=/usr/share/zapret/fake/tls_clienthello_www_google_com.bin
 
-# Profile 4: TCP 443 Google & YouTube (hostfakesplit www.google.com)
+# Profile 4: HTTP 80 (Safe Plaintext Redirection, no 400 Bad Request)
+--new
+--filter-tcp=80
+--dpi-desync=fakeddisorder
+--dpi-desync-split-pos=sld+1
+--dpi-desync-fooling=md5sig
+--dpi-desync-split-seqovl=1
+--dpi-desync-split-seqovl-pattern=0x0168d3a1e8ce99f6
+--hostlist-exclude=/usr/share/zapret/list-exclude.txt
+--hostlist-exclude=/etc/storage/zapret/exclude.list
+
+# Profile 5: HTTPS 443 Main (Google, YouTube, Discord, General Blocked Sites)
 --new
 --filter-tcp=443
---hostlist=/usr/share/zapret/list-google.txt
---dpi-desync=hostfakesplit
---dpi-desync-fooling=ts
---dpi-desync-hostfakesplit-mod=host=www.google.com
-
-# Profile 5: TCP 80,443 General List (Discord & Blocked Sites)
---new
---filter-tcp=80,443
---hostlist=/usr/share/zapret/list-general.txt
---hostlist=/etc/storage/zapret/user.list
+--dpi-desync=fake,fakedsplit
+--dpi-desync-split-pos=1,midsld
+--dpi-desync-fooling=badseq
+--dpi-desync-badseq-increment=10000000
+--dpi-desync-split-seqovl=2
+--dpi-desync-split-seqovl-pattern=0x01d400faf69a3bcb
+--dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.google.com
+--dpi-desync-fake-tls=/usr/share/zapret/fake/tls_clienthello_www_google_com.bin
 --hostlist-exclude=/usr/share/zapret/list-exclude.txt
 --hostlist-exclude=/etc/storage/zapret/exclude.list
---dpi-desync=fake
---dpi-desync-fooling=ts
---dpi-desync-repeats=5
---dpi-desync-fake-tls=/usr/share/zapret/fake/tls_clienthello_sochi_park.bin
---dpi-desync-fake-tls=/usr/share/zapret/fake/stun2.bin
---dpi-desync-fake-http=/usr/share/zapret/fake/tls_clienthello_sochi_park.bin
 
-# Profile 6: UDP 443 IPSet (if enabled)
+# Profile 6: IPSet Fallback TCP (for IP-blocked resources)
 --new
---filter-udp=443
+--filter-tcp=443,8443
 --ipset=/usr/share/zapret/ipset-all.txt.gz
+--dpi-desync=fake,fakedsplit
+--dpi-desync-split-pos=1,midsld
+--dpi-desync-fooling=badseq
+--dpi-desync-badseq-increment=10000000
 --hostlist-exclude=/usr/share/zapret/list-exclude.txt
 --hostlist-exclude=/etc/storage/zapret/exclude.list
---dpi-desync=fake
---dpi-desync-repeats=11
---dpi-desync-fake-quic=/usr/share/zapret/fake/quic_initial_www_google_com.bin
 
-# Profile 7: TCP 80,443,8443 IPSet (if enabled)
+# Profile 7: Games & Wireguard UDP
 --new
---filter-tcp=80,443,8443
---ipset=/usr/share/zapret/ipset-all.txt.gz
---hostlist-exclude=/usr/share/zapret/list-exclude.txt
---hostlist-exclude=/etc/storage/zapret/exclude.list
+--filter-udp=51820,2408,1002,500,1701,4500
 --dpi-desync=fake
---dpi-desync-fooling=ts
---dpi-desync-repeats=5
---dpi-desync-fake-tls=/usr/share/zapret/fake/tls_clienthello_sochi_park.bin
---dpi-desync-fake-tls=/usr/share/zapret/fake/stun2.bin
---dpi-desync-fake-http=/usr/share/zapret/fake/tls_clienthello_sochi_park.bin
-
-# Profile 8: TCP Game Filter
---new
---filter-tcp=12
---ipset=/usr/share/zapret/ipset-all.txt.gz
---dpi-desync=fake
---dpi-desync-any-protocol=1
---dpi-desync-cutoff=n4
---dpi-desync-fooling=ts
---dpi-desync-repeats=5
---dpi-desync-fake-tls=/usr/share/zapret/fake/tls_clienthello_sochi_park.bin
---dpi-desync-fake-tls=/usr/share/zapret/fake/stun2.bin
---dpi-desync-fake-http=/usr/share/zapret/fake/tls_clienthello_sochi_park.bin
---dpi-desync-fake-unknown=/usr/share/zapret/fake/tls_clienthello_sochi_park.bin
---dpi-desync-fake-unknown=/usr/share/zapret/fake/stun2.bin
-
-# Profile 9: UDP Game Filter
---new
---filter-udp=12
---ipset=/usr/share/zapret/ipset-all.txt.gz
---dpi-desync=fake
---dpi-desync-repeats=10
---dpi-desync-any-protocol=1
---dpi-desync-fake-unknown-udp=/usr/share/zapret/fake/ACTIVE_GAME_UDP.bin
---dpi-desync-cutoff=n4
+--filter-l7=wireguard
+--dpi-desync-repeats=6
+--dpi-desync-fake-wireguard=/usr/share/zapret/fake/quic_initial_www_google_com.bin
