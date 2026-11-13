@@ -60,7 +60,7 @@
 # Profile 6: UDP 443 IPSet (if enabled)
 --new
 --filter-udp=443
---ipset=/etc/storage/zapret/ipset-all.txt
+--ipset=/usr/share/zapret/ipset-all.txt.gz
 --hostlist-exclude=/usr/share/zapret/list-exclude.txt
 --hostlist-exclude=/etc/storage/zapret/exclude.list
 --dpi-desync=fake
@@ -70,7 +70,7 @@
 # Profile 7: TCP 80,443,8443 IPSet (if enabled)
 --new
 --filter-tcp=80,443,8443
---ipset=/etc/storage/zapret/ipset-all.txt
+--ipset=/usr/share/zapret/ipset-all.txt.gz
 --hostlist-exclude=/usr/share/zapret/list-exclude.txt
 --hostlist-exclude=/etc/storage/zapret/exclude.list
 --dpi-desync=fake,hostfakesplit
@@ -84,7 +84,7 @@
 # Profile 8: TCP Game Filter
 --new
 --filter-tcp=12
---ipset=/etc/storage/zapret/ipset-all.txt
+--ipset=/usr/share/zapret/ipset-all.txt.gz
 --dpi-desync=fake,hostfakesplit
 --dpi-desync-any-protocol=1
 --dpi-desync-cutoff=n4
@@ -100,7 +100,7 @@
 # Profile 9: UDP Game Filter
 --new
 --filter-udp=12
---ipset=/etc/storage/zapret/ipset-all.txt
+--ipset=/usr/share/zapret/ipset-all.txt.gz
 --dpi-desync=fake
 --dpi-desync-repeats=10
 --dpi-desync-any-protocol=1
