@@ -1,6 +1,6 @@
 # ==============================================================================
 # ALT13 Strategy for Zapret (Discord, YouTube, General DPI Desync)
-# Based on Flowseal zapret-discord-youtube (ALT13.bat)
+# Pure fake mode matching working PC configuration
 # ==============================================================================
 
 # Profile 1: UDP 443 (QUIC) for General List
@@ -26,12 +26,9 @@
 --new
 --filter-tcp=2053,2083,2087,2096,8443
 --hostlist-domains=discord.media
---dpi-desync=fake,multisplit
---dpi-desync-split-seqovl=681
---dpi-desync-split-pos=1
+--dpi-desync=fake
 --dpi-desync-fooling=ts
 --dpi-desync-repeats=7
---dpi-desync-split-seqovl-pattern=/usr/share/zapret/fake/tls_clienthello_www_google_com.bin
 --dpi-desync-fake-tls=/usr/share/zapret/fake/tls_clienthello_www_google_com.bin
 
 # Profile 4: TCP 443 Google & YouTube (hostfakesplit www.google.com)
@@ -42,16 +39,15 @@
 --dpi-desync-fooling=ts
 --dpi-desync-hostfakesplit-mod=host=www.google.com
 
-# Profile 5: TCP 80,443 General List (hostfakesplit mail.ru)
+# Profile 5: TCP 80,443 General List (Discord & Blocked Sites)
 --new
 --filter-tcp=80,443
 --hostlist=/usr/share/zapret/list-general.txt
 --hostlist=/etc/storage/zapret/user.list
 --hostlist-exclude=/usr/share/zapret/list-exclude.txt
 --hostlist-exclude=/etc/storage/zapret/exclude.list
---dpi-desync=fake,hostfakesplit
+--dpi-desync=fake
 --dpi-desync-fooling=ts
---dpi-desync-hostfakesplit-mod=host=mail.ru,altorder=1
 --dpi-desync-repeats=5
 --dpi-desync-fake-tls=/usr/share/zapret/fake/tls_clienthello_sochi_park.bin
 --dpi-desync-fake-tls=/usr/share/zapret/fake/stun2.bin
@@ -73,9 +69,8 @@
 --ipset=/usr/share/zapret/ipset-all.txt.gz
 --hostlist-exclude=/usr/share/zapret/list-exclude.txt
 --hostlist-exclude=/etc/storage/zapret/exclude.list
---dpi-desync=fake,hostfakesplit
+--dpi-desync=fake
 --dpi-desync-fooling=ts
---dpi-desync-hostfakesplit-mod=host=mail.ru,altorder=1
 --dpi-desync-repeats=5
 --dpi-desync-fake-tls=/usr/share/zapret/fake/tls_clienthello_sochi_park.bin
 --dpi-desync-fake-tls=/usr/share/zapret/fake/stun2.bin
@@ -85,11 +80,10 @@
 --new
 --filter-tcp=12
 --ipset=/usr/share/zapret/ipset-all.txt.gz
---dpi-desync=fake,hostfakesplit
+--dpi-desync=fake
 --dpi-desync-any-protocol=1
 --dpi-desync-cutoff=n4
 --dpi-desync-fooling=ts
---dpi-desync-hostfakesplit-mod=host=mail.ru,altorder=1
 --dpi-desync-repeats=5
 --dpi-desync-fake-tls=/usr/share/zapret/fake/tls_clienthello_sochi_park.bin
 --dpi-desync-fake-tls=/usr/share/zapret/fake/stun2.bin
